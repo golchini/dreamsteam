@@ -3,6 +3,8 @@ import openai
 import base64
 import json
 import requests
+
+
 def save_story(text, folder, name):
     with open(f"./{folder}/{name}.txt", "w") as f:
         f.write(text)
