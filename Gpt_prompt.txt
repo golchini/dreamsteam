@@ -1,0 +1,34 @@
+Im going to tell you of my dream and i want you to make a more detailed story out of it so i can create a booklet with image generation. 
+Can you split it into sections and put it inside of a json array  section= nr of section, story= containing the story, alt_text= the alt text : 
+a person being in the airport with in the duty-free zone with a futuristic look. The brother of this person gets shot and by the swat and the main character can flee from them to hide. He was being searched because they were making  illegally makeup with plutonium
+
+
+Im going to tell you of my dream and i want you to make a more detailed story out of it so i can create a booklet with image generation.Can you split it into sections and put it inside of a json array section= nr of section, story= containing the story, alt_text= the alt text(make sure that the alt text is overall consistent and map each person in it to a known movie character): 
+a person being in the airport with in the duty-free zone with a futuristic look. The brother of this person gets shot and by the swat and the main character can flee from them to hide. He was being searched because they were making  illegally makeup with plutonium
+
+a book with a picture of two children on it, german romanticism, song, printed page, awful, with two characters, booru, bottom - view
+
+a drawing German romanticism 
+a storybook illustration 
+pixabay
+folk art
+closeup faces
+nuremberg chronicle
+round teeth and goofy face
+closeup photo, 
+advert. The person is standing in a sleek, modern airport with futuristic decor. 
+
+closeup faces
+a comic book panel,
+retrofuturism, 
+cartoon style illustration, 
+new yorker illustration,
+
+a surrealist painting,
+inspired by Andrea Kowch
+cg society contest winner
+covered with cobwebs and dust,
+norman rockwell.
+detailed, 
+in the style of hans thoma
+
