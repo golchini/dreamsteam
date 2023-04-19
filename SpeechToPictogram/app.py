@@ -47,7 +47,7 @@ def get_image(text):
         json={
             "text_prompts": [
                 {
-                    "text": f"a surrealist painting, inspired by Andrea Kowch, cg society contest winner, covered with cobwebs and dust, norman rockwell, detailed, {text}"
+                    "text": f"a surrealist,crazy and animated with colors and creepy faces everything detailed, {text}"
                 }
             ],
             "cfg_scale": 25,
@@ -64,13 +64,14 @@ def get_image(text):
         raise Exception("Non-200 response: " + str(response.text))
 
     data = response.json()
+
+    #To change:
     number = random.randint(0, 1000)
+
     with open(f"{number}.png", "wb") as f:
             f.write(base64.b64decode(data["artifacts"][0]["base64"]))
 
     return f"{number}.png"
-
-import logging
 
 def get_array(dream):
     json_start_index = dream.find("[")
@@ -85,37 +86,41 @@ def get_array(dream):
     return my_object
 
 def SpeechToText(audio, SelectedModel):
-    logging.info('Loading model...')
+    print('Loading model...')
     model = whisper.load_model(SelectedModel)
 
-    logging.info('Loading audio...')
+    print('Loading audio...')
     audio = whisper.load_audio(audio)
     audio = whisper.pad_or_trim(audio)
 
-    logging.info('Creating log-mel spectrogram...')
+    print('Creating log-mel spectrogram...')
     mel = whisper.log_mel_spectrogram(audio).to(model.device)
 
-    logging.info('Detecting language...')
+    print('Detecting language...')
     _, probs = model.detect_language(mel)
     lang = f"Language: {max(probs, key=probs.get)}"
 
-    logging.info('Decoding audio to text...')
+    print('Decoding audio to text...')
     options = whisper.DecodingOptions(fp16 = False)
     result = whisper.decode(model, mel, options)
-    #text = get_story(result.text)
-    #print(text)
-    #text = get_array(text)
-    #print(type(text))
-    #car = []
-    #for section in text:
-    #   img = get_image(section["alt_text"])
-    #    car.append(img)
-    #    print('image added')
-    car = [ "./585.png"]   
-    text = "this is a test"
 
-    return car, text
+    text = get_story(result.text)
+    print("Text: " + text)
+    text = get_array(text)
+    print(type(text))
+    labels = []
+    stories = []
+    carousel = []
+    for section in text:
+        img = get_image(section["alt_text"])
+        stories.append(section["story"])
+        labels.append(section["alt_text"])
+        carousel.append(img)
+        print('image added')
+    #carou = [ "./585.png"]   
+    #text = "this is a test"
 
+    return carousel, labels, stories
 
 def clean_text(text):
     """
@@ -230,21 +235,19 @@ with gr.Blocks() as demo:
     gr.Markdown("This Application transforms your dreams into really cool pictures and makes it a more memorable experience.")
     gr.Markdown("With this application you can save your dreams and share them with your friends and family.")
     with gr.Row():
-            audio = gr.Audio(source="microphone", type="filepath")
+            audio = gr.Audio(label="Record your dream here",source="microphone", type="filepath")
     with gr.Row():    
             dropdown = gr.Dropdown(label="Whisper Model", choices=WhisperModels, value='base')
-    with gr.Row():
-            transcript = gr.Textbox(label="Transcript")
-            #lan = gr.Textbox(label="Language")
     with gr.Row():    
-            carousel = gr.Gallery()
+            btn1 = gr.Button("Show me my dream!")
     with gr.Row():    
-            btn1 = gr.Button("Transcribe")
-            btn1.click(SpeechToText, inputs=[audio, dropdown], outputs=[carousel, transcript])
-    with gr.Row():
-            box = gr.Box()
+            carousel = gr.Gallery(label="Your dream")
+            stories = gr.Textbox(label="Stories")
+            labels = gr.Textbox(label="Labels")
+            btn1.click(SpeechToText, inputs=[audio, dropdown], outputs=[carousel, labels, stories])
+
   
-    gr.Markdown("Made by [Alireza](https://github.com/golali) [Erfan](https://github.com/golchini) and [Omidreza](https://github.com/omidreza-amrollahi)")
+    gr.Markdown("Made by the Dreamers [Alireza](https://github.com/golali) [Erfan](https://github.com/golchini) and [Omidreza](https://github.com/omidreza-amrollahi)")
 
 
         
