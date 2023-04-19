@@ -61,7 +61,7 @@ def get_story(dream):
     frequency_penalty=0,
     presence_penalty=0
     )
-    return json.loads(json.dumps(response))
+    return response["choices"][0]["text"]
 
 def get_array(dream):
     json_start_index = dream.find("[")
