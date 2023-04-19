@@ -1,3 +1,6 @@
+import base64
+import json
+import random
 import whisper
 import gradio as gr 
 WhisperModels = ['tiny', 'base', 'small', 'medium', 'large']
@@ -14,23 +17,105 @@ import os
 openai.organization = os.getenv('organization')
 openai.api_key = os.getenv('api_key')
 
+def get_story(dream):
+    response = openai.Completion.create(
+    model="text-davinci-003",
+    prompt=f"Im going to tell you of my dream and i want you to make a better more and more detailed story out of it so i can create a booklet with image generation. Can you split it into sections and put it inside of a json array section= nr of section, story= containing the story, alt_text= the alt text(make sure that the alt text is overall consistent and map each person in it to a known movie character):{dream}",
+    temperature=0.7,
+    max_tokens=2048,
+    top_p=1,
+    frequency_penalty=0,
+    presence_penalty=0
+    )
+    return response["choices"][0]["text"]
+
+def get_image(text):
+    engine_id = "stable-diffusion-xl-beta-v2-2-2"
+    api_host = "https://api.stability.ai"
+    stability_key = os.getenv('stability_key')
+
+    if stability_key is None:
+        raise Exception("Missing Stability API key.")
+
+    response = requests.post(
+        f"{api_host}/v1/generation/{engine_id}/text-to-image",
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Bearer {stability_key}"
+        },
+        json={
+            "text_prompts": [
+                {
+                    "text": f"a surrealist painting, inspired by Andrea Kowch, cg society contest winner, covered with cobwebs and dust, norman rockwell, detailed, {text}"
+                }
+            ],
+            "cfg_scale": 25,
+            "clip_guidance_preset": "FAST_BLUE",
+            "height": 512,
+            "width": 512,
+            "samples": 1,
+            "steps": 50,
+            "seed": 4294967295,
+        },
+    )
+
+    if response.status_code != 200:
+        raise Exception("Non-200 response: " + str(response.text))
+
+    data = response.json()
+    number = random.randint(0, 1000)
+    with open(f"{number}.png", "wb") as f:
+            f.write(base64.b64decode(data["artifacts"][0]["base64"]))
+
+    return f"{number}.png"
+
+import logging
+
+def get_array(dream):
+    json_start_index = dream.find("[")
+        
+    # Extract the JSON-formatted string from the original string
+    json_string = dream[json_start_index:]
+
+    # Parse the JSON-formatted string and convert it to a Python object
+    my_object = json.loads(json_string)
+
+    # Extract the JSON array from the Python object
+    return my_object
+
 def SpeechToText(audio, SelectedModel):
-    if audio == None : return "" 
+    logging.info('Loading model...')
     model = whisper.load_model(SelectedModel)
+
+    logging.info('Loading audio...')
     audio = whisper.load_audio(audio)
     audio = whisper.pad_or_trim(audio)
 
-    # make log-Mel spectrogram and move to the same device as the model
+    logging.info('Creating log-mel spectrogram...')
     mel = whisper.log_mel_spectrogram(audio).to(model.device)
 
-    # Detect the Max probability of language ?
+    logging.info('Detecting language...')
     _, probs = model.detect_language(mel)
     lang = f"Language: {max(probs, key=probs.get)}"
 
-    #  Decode audio to Text
+    logging.info('Decoding audio to text...')
     options = whisper.DecodingOptions(fp16 = False)
     result = whisper.decode(model, mel, options)
-    return result.text, lang
+    #text = get_story(result.text)
+    #print(text)
+    #text = get_array(text)
+    #print(type(text))
+    #car = []
+    #for section in text:
+    #   img = get_image(section["alt_text"])
+    #    car.append(img)
+    #    print('image added')
+    car = [ "./585.png"]   
+    text = "this is a test"
+
+    return car, text
+
 
 def clean_text(text):
     """
@@ -40,6 +125,7 @@ def clean_text(text):
     Returns:
         _type_: _description_
     """
+    print("cleaning text: ", text)
     text = text.lower()
     text = text.replace(",", " ")
     text = text.replace(".", " ")
@@ -124,7 +210,10 @@ def save_pictogram(transcript):
         text_list (_type_): _description_
     """
     cleaned_text, concatString = clean_text(transcript)
+    print(cleaned_text)
     text_list = POS_tagging(concatString).make_predictions()
+    if(len(text_list) < 1):
+        return None
     fig, ax = plt.subplots(1,len(text_list), figsize=(10,1.75))
     if len(text_list) > 1:
         for i, text in enumerate(text_list):
@@ -147,12 +236,13 @@ with gr.Blocks() as demo:
         with gr.Column():
             transcript = gr.Textbox(label="Transcript")
             lan = gr.Textbox(label="Language")
+            carousel = gr.Gallery()
         btn1 = gr.Button("Transcribe")
-        btn1.click(SpeechToText, inputs=[audio, dropdown], outputs=[transcript, lan])
-    #if lan.value == "Language: en":
-    image = gr.Image()
-    btn2 = gr.Button("Generate Pictogram")
-    btn2.click(save_pictogram, inputs=[transcript], outputs=[image])
+        btn1.click(SpeechToText, inputs=[audio, dropdown], outputs=[carousel, transcript])
+        with gr.Column():
+            box = gr.Box()
+            box.add(carousel.label(transcript.))  
+  
     gr.Markdown("Made by [Omidreza](https://github.com/omidreza-amrollahi)")
 
         
