@@ -226,24 +226,26 @@ def save_pictogram(transcript):
     return safe_image
 
 with gr.Blocks() as demo:
-    gr.Markdown("# Speech to Pictogram App")
-    gr.Markdown("The transcript of the audio can be in different languages, but the pictogram will only work for English")
-    gr.Markdown("The pictures which are titled in slashes (/) are generated using stable diffusion, however, the API here has a limit of 25 calls per minute.")
+    gr.Markdown("# The Dream Steamer")
+    gr.Markdown("This Application transforms your dreams into really cool pictures and makes it a more memorable experience.")
+    gr.Markdown("With this application you can save your dreams and share them with your friends and family.")
     with gr.Row():
-        with gr.Column():
             audio = gr.Audio(source="microphone", type="filepath")
+    with gr.Row():    
             dropdown = gr.Dropdown(label="Whisper Model", choices=WhisperModels, value='base')
-        with gr.Column():
+    with gr.Row():
             transcript = gr.Textbox(label="Transcript")
-            lan = gr.Textbox(label="Language")
+            #lan = gr.Textbox(label="Language")
+    with gr.Row():    
             carousel = gr.Gallery()
-        btn1 = gr.Button("Transcribe")
-        btn1.click(SpeechToText, inputs=[audio, dropdown], outputs=[carousel, transcript])
-        with gr.Column():
+    with gr.Row():    
+            btn1 = gr.Button("Transcribe")
+            btn1.click(SpeechToText, inputs=[audio, dropdown], outputs=[carousel, transcript])
+    with gr.Row():
             box = gr.Box()
-            box.add(carousel.label(transcript.))  
   
-    gr.Markdown("Made by [Omidreza](https://github.com/omidreza-amrollahi)")
+    gr.Markdown("Made by [Alireza](https://github.com/golali) [Erfan](https://github.com/golchini) and [Omidreza](https://github.com/omidreza-amrollahi)")
+
 
         
 demo.launch()
